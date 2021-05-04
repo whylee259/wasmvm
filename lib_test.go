@@ -1,4 +1,4 @@
-// +build mocks
+// +build ignore
 
 package cosmwasm
 
