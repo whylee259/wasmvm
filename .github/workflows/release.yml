@@ -7,7 +7,6 @@ on:
       - hotfix**
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   CARGO_HOME: /.cargo
 jobs:
   package-version: # emit package version using `cargo tree -i`
@@ -62,6 +61,6 @@ jobs:
     steps:
       - name: Push Tag to GitHub
         run: |
-          curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -d "{\"ref\": \"refs/tags/${{ needs.check-version.outputs.tag }}\", \"sha\": \"${GITHUB_SHA}\"}" \
           "https://api.github.com/repos/${GITHUB_REPOSITORY}/git/refs"
