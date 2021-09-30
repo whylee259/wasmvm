@@ -9,7 +9,7 @@ on:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 jobs:
-  package-version:
+  package-version: # emit package version using `cargo tree -i`
     name: Get Package Version
     runs-on: ubuntu-latest
     container: rust:1.53.0-slim
@@ -22,16 +22,17 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            $CARGO_HOME/bin/
-            $CARGO_HOME/registry/index/
-            $CARGO_HOME/registry/cache/
-            $CARGO_HOME/git/db/
+            ${CARGO_HOME}/bin/
+            ${CARGO_HOME}/registry/index/
+            ${CARGO_HOME}/registry/cache/
+            ${CARGO_HOME}/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Get package version
         id: get-version
         run: |
-          echo ::set-output name=version::$(cargo tree -i wasmvm | grep -oE "[0-9]+(\.[0-9]+){2}-[0-9]+(\.[0-9]+){2}")
+          VERSION=$(cargo tree -i wasmvm | grep -oE "[0-9]+(\.[0-9]+){2}-[0-9]+(\.[0-9]+){2}")
+          echo ::set-output name=version::${VERSION}
   check-version: # check whether the package version exist on git tags
     name: Check Version
     needs: package-version
@@ -45,10 +46,13 @@ jobs:
         with:
           version: ${{ needs.package-version.outputs.version }}
           git_tag_prefix: v
-  push-tag:
+  push-tag: # if the version does not exist as git tag, push it
     name: Push Tag
     needs: check-version
     runs-on: ubuntu-latest
     steps:
       - name: Push Tag to GitHub
-        run: echo ${{ needs.check-version.outputs.tag }}
+        run: |
+          curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
+          -d "{\"ref\": \"refs/tags/${{ needs.check-version.outputs.tag }}\", \"sha\": \"${GITHUB_SHA}\"}" \
+          "https://api.github.com/repos/${GITHUB_REPOSITORY}/git/refs"
