@@ -39,7 +39,7 @@ jobs:
     needs: package-version
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.tag-check.outputs.git_tag_name }}
+      tag: ${{ steps.result.outputs.result }}
     steps:
       - uses: actions/checkout@v2
       - uses: dudo/tag_check@v1.1.1
@@ -48,16 +48,23 @@ jobs:
         with:
           version: ${{ needs.package-version.outputs.version }}
           git_tag_prefix: v
+      - id: result
+        run: |
+          echo ${{ steps.tag-check.outcome }}
+          echo ${{ steps.tag-check.conclusion }}
+          RESULT=""
+          if [ ${{ steps.tag-check.outcome }} == 'success' ] ; then
+            RESULT=${{ steps.tag-check.outputs.git_tag_name }}}
+          fi
+          echo ${RESULT}
+          echo ::set-output name=result::${RESULT}
+
   push-tag: # if the version does not exist as git tag, push it
     name: Push Tag
     needs: check-version
-    if: ${{ needs.check-version.result == 'success' }}
+    if: ${{ needs.check-version.outputs.tag }}
     runs-on: ubuntu-latest
     steps:
-      - name: Print Result
-        run: |
-          echo ${{ needs.check-version.result == 'success' }}
-          echo ${{ needs.check-version.result }}
       - name: Push Tag to GitHub
         run: |
           curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
