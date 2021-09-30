@@ -51,12 +51,12 @@ jobs:
   push-tag: # if the version does not exist as git tag, push it
     name: Push Tag
     needs: check-version
-    if: ${{ needs.check-version.result == success }}
+    if: ${{ needs.check-version.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Print Result
         run: |
-          echo ${{ needs.check-version.result == success }}
+          echo ${{ needs.check-version.result == 'success' }}
           echo ${{ needs.check-version.result }}
       - name: Push Tag to GitHub
         run: |
