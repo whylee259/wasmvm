@@ -8,7 +8,7 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  CARGO_HOME: /.
+  CARGO_HOME: /.cargo
 
 jobs:
   package-version: # emit package version using `cargo tree -i`
