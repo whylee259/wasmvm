@@ -27,8 +27,7 @@ jobs:
             ${{ env.CARGO_HOME }}/registry/index/
             ${{ env.CARGO_HOME }}/registry/cache/
             ${{ env.CARGO_HOME }}/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-home-${{ hashFiles('**/Cargo.lock') }}
       - name: Get package version
         id: get-version
         run: |
@@ -50,15 +49,11 @@ jobs:
           git_tag_prefix: v
       - id: result
         run: |
-          echo ${{ steps.tag-check.outcome }}
-          echo ${{ steps.tag-check.conclusion }}
           RESULT=""
           if [ ${{ steps.tag-check.outcome }} == 'success' ] ; then
-            RESULT=${{ steps.tag-check.outputs.git_tag_name }}}
+            RESULT=${{ steps.tag-check.outputs.git_tag_name }}
           fi
-          echo ${RESULT}
           echo ::set-output name=result::${RESULT}
-
   push-tag: # if the version does not exist as git tag, push it
     name: Push Tag
     needs: check-version
