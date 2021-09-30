@@ -8,14 +8,20 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#  CARGO_HOME: /.cargo
 jobs:
   package-version: # emit package version using `cargo tree -i`
     name: Get Package Version
     runs-on: ubuntu-latest
-    container: rust:1.53.0-slim
+    container:
+      image: rust:1.53.0-slim
+#      env:
+#        CARGO_HOME: ${{ env.CARGO_HOME }}
     outputs:
       version: ${{ steps.get-version.outputs.version }}
     steps:
+      - name: Print CARGO_HOME
+        run: echo ${CARGO_HOME}
       - name: Checkout
         uses: actions/checkout@v2
       - name: Cache cargo
